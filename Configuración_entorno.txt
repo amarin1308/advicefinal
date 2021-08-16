@@ -1,0 +1,456 @@
+================================================================================================
+Institucion..: Universidad Tecnica Nacional
+Sede.........: Del Pacífico
+Carrera......: Tecnologías de Información
+Periodo......: 3-2020
+Charla.......: Plataforma Digital Ocean Universidad Tecnológica de Panamá
+Documento....: api_data.py
+Objetivos....: Demostración de un micro servicio web con api-REST.
+Profesor.....: Jorge Ruiz (york)
+Estudiante...:
+================================================================================================
+
+01. Actualizar repositorios del servidor 
+	
+	apt update 	
+	apt upgrade
+
+
+02. Instalar nmap (comando que permite ver los puertos en usos de una ip)
+
+	apt install nmap
+
+
+03.Probar el comando
+
+	nmap + <ip servidor>
+
+
+04. Instalar el servicio de http
+	
+	apt-get install apache2
+
+
+05. Verificar que el servicio se instaló correctamente, usando una de las siguientes formas:
+	systemctl status apache2
+	nmap <ip del equipo>
+	en la máquina anfitriona, utilizando un web browser validar servicio contra IP
+	
+	
+06. Instalar y configurar servicio de FTP
+
+	apt-get install vsftpd
+
+	mkdir /etc/vsftpd
+	mkdir /etc/vsftpd/vacio
+	nano /etc/vsftpd/chroot_list		Este archivo se deja en blanco
+
+			salvar documento: ctrl + o 
+			salir documento:  ctrl + x
+		
+	nano /etc/shells
+	
+	Agregar al final la línea /bin/false
+
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x
+
+
+07. Se procede a modificar el archivo vsftpd.conf, para configurar el comportamiento que habrá de tener el servicio de FTP.
+
+	nano /etc/vsftpd.conf
+
+
+08. La siguiente es una lista de las variables que deben modificarse y mantenerse activas para que el servicio de FTP 
+    funcione como se espera.  Las variables se configuran de acorde a su aparición de principio a fin.
+
+	listen=NO
+	anonymous_enable=NO
+	write_enable=YES
+	local_umask=022
+
+	dirmessage_enable=YES
+	use_localtime=YES
+	xferlog_enable=YES
+
+	connect_from_port_20=YES
+	xferlog_file=/var/log/vsftpd.log
+	ftpd_banner=<Mensaje que me interesa presentar>    opcional
+
+	chroot_local_user=YES 		 	configurar la segunda que aparece en documento
+	chroot_list_enable=YES
+	allow_writeable_chroot=YES		agregar esta línea no existe
+
+	chroot_list_file=/etc/vsftpd/chroot_list
+	secure_chroot_dir=/etc/vsftpd/vacio
+	pam_service_name=vsftpd
+
+
+	agregar estas instrucciones al final del archivo
+	max_clients=100
+	max_per_ip=10
+
+
+	salvar documento: ctrl + o 
+	salir documento:  ctrl + x
+
+
+09. Reiniciar el servicio de vsftpd
+	
+	/etc/init.d/vsftpd restart
+
+
+10. Utilizando nmap + [ip de su servidor], deberían de observarse los puertos:
+
+	PORT   STATE SERVICE
+	21/tcp open  ftp
+	22/tcp open  ssh
+	80/tcp open  http
+
+	Si el puerto 21 no aparece en la lista, se debe revisar la configuración del servicio de ftp
+
+
+11. Configurar las cuentas de los usuarios de FTP
+
+	mkdir /home/ftpusers	carpeta física donde se grabarán los archivos de los usuarios
+	mkdir /utiles			carpeta que contendrá archivos batch de uso continuo
+
+	nano /utiles/addftpuser.sh	el nombre es opcional
+
+		mkdir /home/ftpusers/$1
+		groupadd $1
+		useradd -d /home/ftpusers/$1 -s /bin/false -g $1 $1
+		chown -R $1:$1 /home/ftpusers/$1
+		chmod -R 755 /home/ftpusers/$1
+		passwd $1
+		ln /home/ftpusers/$1 /var/www/html/$1 -s
+
+	salvar documento: ctrl + o 
+	salir documento:  ctrl + x
+
+
+12. Se cambian los atributos del archivo y hacerlo ejecutable
+
+	chmod +x  /utiles/addftpuser.sh
+
+
+13. Validar función del batch anterior:
+
+	/utiles/./addftpuser.sh <usuario de prueba>
+	
+		Asignar contraseña y validarla (ojo no se mira cuando se escribe)
+
+
+14. Abrir el Filezilla Client o cualquier otra herramiento ftp-cliente y probar datos de autentificación
+
+
+15. Instalar el intérprete de comandos PHP-7.2
+
+	a. Actualiza la lista de descargas
+
+		apt update
+		apt upgrade
+
+	b. Muestra en pantalla la lista de componentes de php7.2 disponibles para instalar
+
+		apt-cache search php7.2
+
+	c. Se indican los componentes de php que se desean instalar.
+		
+		apt install php7.2 php7.2-common php7.2-cli libapache2-mod-php7.2 php7.2-fpm php7.2-mysql php7.2-xml php7.2-json php7.2-curl php7.2-mbstring php7.2-zip php7.2-gd php7.2-imagick php7.2-opcache php7.2-intl
+	
+
+16. Modificar el servidor de Apache para iniciar con index.php
+
+	nano /etc/apache2/sites-available/000-default.conf
+	
+		Agregar línea DirectoryIndex index.php index.html antes de la línea DocumentRoot.
+
+	salvar documento: ctrl + o 
+	salir documento:  ctrl + x
+
+	
+17. Reiniciar el servidor de apache2.
+
+	systemctl restart apache2
+
+
+18. Probar que el interprete de PHP funciona.
+
+	nano /var/www/html/index.php
+	
+		<?php
+			echo '<h3>Probando interprete de PHP</h3>';
+			$salida = 'Texto de prueba...!';
+			echo '<strong>' . $salida . '</strong>';
+		?> 
+
+	salvar documento: ctrl + o 
+	salir documento:  ctrl + x
+	
+
+19. En browser probar que index.php funciona adecuadamente.
+
+
+20. Instalar MySQL 5.7
+
+	apt-cache search mysql-server-5.7	(solo para validar la version)
+	
+	apt install mysql-server-5.7		(instala el servidor de bd)
+	
+	service mysql status				(verifica el status del servidor de bd)
+	
+	
+21. Configura el acceso remoto del MySQL
+	
+	nano /etc/mysql/mysql.conf.d/mysqld.cnf
+	
+		Buscar variable bind-address y configurar octetos a la ip del servidor
+	
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x
+	
+	
+	Reiniciar servidor de MySQL
+
+		systemctl restart mysql
+		systemctl status mysql
+
+
+	Crear cuenta de usuario remoto
+	
+		Ingresar al MySQL
+		mysql -h localhost -u root -p
+	
+		create user 'remoto'@'%' identified by 'contraseña';
+		grant all privileges on *.* to 'remoto'@'%' with grant option;
+		flush privileges;
+
+		quit
+
+	Probar con herramienta externa por ejemplo MySQl Workbench
+	
+	
+22. Registrar nombre de dominio
+
+	El proceso se realiza independiente a este script
+
+
+23. Instalar el servicio de https
+
+	a. Instalar l utilitario para crear certificados, 
+	   (las nuevas versiones de Ubuntu server ya lo traen instalado)
+		
+		apt-get install openssl ca-certificates	 
+
+	
+	b. Crear carpetas para los certificados (el nombre y creación es opcional)
+	
+		mkdir certs  
+		cd certs
+
+	
+	c. Crear la base para los certificados 
+	
+		openssl req -newkey rsa:2048 -nodes -keyout server.com.key -out server.com.csr
+		
+		(Se solicitaran datos de sitio)
+		
+		You are about to be asked to enter information that will be incorporated
+		into your certificate request.
+		
+		What you are about to enter is what is called a Distinguished Name or a DN.
+		There are quite a few fields but you can leave some blank
+
+		For some fields there will be a default value,
+		If you enter '.', the field will be left blank.
+		-----
+			Country Name (2 letter code) [AU]:CR
+			State or Province Name (full name) [Some-State]:Puntarenas
+			Locality Name (eg, city) []:Barranca
+			Organization Name (eg, company) [Internet Widgits Pty Ltd]:DemoYork
+			Organizational Unit Name (eg, section) []:TI
+			Common Name (e.g. server FQDN or YOUR name) []:demoyork.com
+			Email Address []:jruiz@demoyork.com
+
+		Please enter the following 'extra' attributes
+		to be sent with your certificate request
+
+			A challenge password []:mascota querida
+			An optional company name []:DemoYork
+
+	
+	d. Se autofirma el certificado y crea el .crt
+	   openssl x509 -req -days 365 -in server.com.csr -signkey server.com.key -out server.com.crt
+
+	   
+	e. Se copia el certificado y llave en las carpetas correspondientes al servicio de https
+		cp server.com.key /etc/ssl/private/
+		cp server.com.crt /etc/ssl/certs/
+
+		
+	f. Modifica el servicio de apache2
+		nano /etc/apache2/sites-available/default-ssl.conf
+		
+		(Buscar estas variables, modificar parecido a las siguientes instrucciones, recuerde 
+		respladar las originales)
+		
+			SSLCertificateFile     /etc/ssl/certs/server.com.crt
+			SSLCertificateKeyFile  /etc/ssl/private/server.com.key
+			
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x	
+
+
+	g. Cargar modulos de apache2 requeridos para activar https
+		a2enmod ssl
+		a2ensite default-ssl
+
+	
+	h. Reiniciar apache2
+		systemctl reload apache2
+
+		
+	i. Forzar el sitio publicado a ejecutar sobre https
+
+		nano /etc/apache2/apache2.conf
+		
+		En el segmento de directorios escribir las siguientes instrucciones
+		
+		<Directory /var/www/html/???/???>
+       	Options Indexes FollowSymLinks
+        	AllowOverride all
+        	Require all granted
+
+        	RewriteEngine on
+			RewriteCond %{HTTPS} !on
+			RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+		</Directory>
+
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x
+	
+		a2enmod rewrite
+		
+		systemctl restart apache2
+
+
+24. Instalar API-Rest con Python y Flask
+
+	a. Intalar paquetes requeridos
+	
+		apt install python3-pip python3-dev python3-venv build-essential libssl-dev libffi-dev python3-setuptools
+
+
+	b. crear carpetas de trabajos (opcional)
+		
+		mkdir /apps
+		mkdir /apps/apiData
+		cd /apps/apiData
+
+
+	c. Crear entorno virtual para el api-rest
+		
+		python3 -m venv apiDataenv
+
+		
+	d. Crear/Copiar el archivo .py
+		
+		nano api_data.py
+		
+		-- Si fuese requerido
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x		
+
+		
+	e. Activar el entorno virtual de Python
+		
+		source apiDataenv/bin/activate
+	
+		la vista de directorio cambia a algo parecido a
+		
+		(apiDataenv) root@ubuntu-s-1vcpu-1gb-nyc1-01:/apps/apiData#
+
+
+	f. Instalar las librerías requeridas para el API, dentro de 
+	   la carpeta de trabajo
+		
+		pip install flask flask_cors
+		pip install uwsgi
+		pip install wheel
+
+		
+	g. Crear cargador del api-Rest	
+
+		nano wsgi.py 
+
+			from api_data import app
+
+			if __name__ == "__main__":
+				app.run()
+				
+		salvar documento: ctrl + o 
+		salir documento:  ctrl + x		
+
+
+	h. Probar que ejecuta
+		uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app
+		
+		Usar Postman o cualquier otra herramienta cliente
+		
+		
+	i. Salir del entorno virtual de Python
+
+		deactivate
+		
+		la vista de directorio cambia al formato original algo parecido a
+		
+		root@ubuntu-s-1vcpu-1gb-nyc1-01:/apps/apiData#
+		
+		
+	j. Configurar el api-Rest como un servicio del sistema
+
+		j.1. ubicados en la misma carpeta del aplicativo, creamos el entorno
+		     inicial con las variables requeridas para ip y puerto
+
+			nano api_data.ini
+			
+				[uwsgi]
+				module = wsgi:app
+				
+				master = true
+				processes = 5
+
+				socket = 0.0.0.0:5000
+				protocol=http
+				
+			salvar documento: ctrl + o 
+			salir documento:  ctrl + x	
+ 		
+		j.2. creamos el archivo de servicio para el sistema operativo
+
+			nano /etc/systemd/system/api_data.service
+
+				[Unit]
+				Description=Instancia WSGI para servicio de apiData
+				After=network.target
+
+				[Service]
+				WorkingDirectory=/apps/apiData
+				Environment="PATH=/apps/apiData/apiDataenv/bin"
+				ExecStart=/apps/apiData/apiDataenv/bin/uwsgi --ini api_data.ini
+
+				[Install]
+				WantedBy=multi-user.target
+
+			salvar documento: ctrl + o 
+			salir documento:  ctrl + x
+
+		j.3. Probar servicio  
+
+			systemctl start api_data
+			
+		j.4. Establecer el servicio en la cola de arranque	
+		
+			systemctl enable api_data
+
