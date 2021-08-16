@@ -1,0 +1,84 @@
+{
+        "clave":"010101",
+        "codigoactividad":"01",
+        "numeroconsecutivo":"1",
+        "fechaemision":"6/8/2021",
+
+        "emisor":{
+            "nombre":"advicesolutions",
+            "id":{
+                "tipoid":"01",
+                "numeroid":"1-123456"
+            },
+            "ubicacion":{   
+                "direccion":"Miramar,Puntarenas"
+            },
+            
+            "telefono":{
+                "codigop":"506",
+                "numero":"8888-8888"
+            },
+            "email":"advicesolutions@gmail.com"
+
+        },
+        "receptor":{
+            "nombre":"Andrio Marin",
+            "id":{
+                "tipoid":"02",
+                "numeroid":"11111111"
+            },
+            "ubicacion":{
+                "direccion":"Alajuelita, San Jose, Costa Rica"
+            } ,
+            "telefono":{
+                "codigop":"506",
+                "numero":"83119850"
+            },
+            "email":"andrio13marin@gmail.com"
+        },
+
+        "detalleservicio":{
+            "lineadetalle":[
+            {
+            "numerolinea":"1",
+            "codproducto":"b11mo",
+            "cantidad":"1",
+            "detalleproducto":"msi b11mo",
+            "preciouni":"650.000",
+            "montotal":"650.000",
+            "tarifa":"0.13",
+            "impuesto":"84.500",
+            "montolinea":"734.500"
+            
+            },
+            {
+            "numerolinea":"2",
+            "codproducto":"apple2017",
+            "cantidad":"1",
+            "detalleproducto":"Mackbook Pro 2017",
+            "preciouni":"850.000",
+            "montotal":"850.000",
+            "tarifa":"0.13",
+            "impuesto":"110.500",
+            "montolinea":"960.500"
+            }
+            ]
+            
+        },
+        
+        "resumenfactura":{
+            "codtipomoneda":{
+                "codmoneda":"CRC"
+            },
+            "totalventa":"650.000",
+            "descuentos":"0",
+            "totalventaneta":"650.000",
+            "totalimpuesto":"84.500",
+            "total":"734.500"
+        },
+
+        "firmadigital":{
+            "firma":"aqui va la firma digital"
+        }
+    
+}
