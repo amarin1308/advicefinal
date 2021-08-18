@@ -2,13 +2,13 @@
         "clave":"010101",
         "codigoactividad":"01",
         "numeroconsecutivo":"1",
-        "fechaemision":"6/8/2021",
+        "fechaemision":"2021-08-17",
 
         "emisor":{
             "nombre":"advicesolutions",
             "id":{
                 "tipoid":"01",
-                "numeroid":"1-123456"
+                "numeroid":"1"
             },
             "ubicacion":{   
                 "direccion":"Miramar,Puntarenas"
@@ -44,11 +44,11 @@
             "codproducto":"b11mo",
             "cantidad":"1",
             "detalleproducto":"msi b11mo",
-            "preciouni":"650.000",
-            "montotal":"650.000",
+            "preciouni":"650000",
+            "montotal":"650000",
             "tarifa":"0.13",
-            "impuesto":"84.500",
-            "montolinea":"734.500"
+            "impuesto":"84500",
+            "montolinea":"734500"
             
             },
             {
@@ -56,11 +56,11 @@
             "codproducto":"apple2017",
             "cantidad":"1",
             "detalleproducto":"Mackbook Pro 2017",
-            "preciouni":"850.000",
-            "montotal":"850.000",
+            "preciouni":"850000",
+            "montotal":"850000",
             "tarifa":"0.13",
-            "impuesto":"110.500",
-            "montolinea":"960.500"
+            "impuesto":"110500",
+            "montolinea":"960500"
             }
             ]
             
@@ -70,11 +70,11 @@
             "codtipomoneda":{
                 "codmoneda":"CRC"
             },
-            "totalventa":"650.000",
+            "totalventa":"650000",
             "descuentos":"0",
-            "totalventaneta":"650.000",
-            "totalimpuesto":"84.500",
-            "total":"734.500"
+            "totalventaneta":"650000",
+            "totalimpuesto":"84500",
+            "total":"734500"
         },
 
         "firmadigital":{
