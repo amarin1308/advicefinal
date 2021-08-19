@@ -2,14 +2,10 @@ from flask import Flask, jsonify, abort, make_response, request
 import xml.etree.ElementTree as et
 from xml.dom import minidom
 import psycopg2
+import os
+import lxml
 from lxml import etree
 import lxml
-
-def embellecedor(expXML):
-    contenido = et.tostring(expXML, 'utf-8').decode('utf8')
-    procesado = minidom.parseString(contenido)
-    return procesado.toprettyxml(indent="  ")
-
 
 connection=psycopg2.connect(
     host='localhost',
@@ -19,6 +15,96 @@ connection=psycopg2.connect(
     )
 cursor=connection.cursor()
 
+def embellecedor(expXML):
+    contenido = et.tostring(expXML, 'utf-8').decode('utf8')
+    procesado = minidom.parseString(contenido)
+    return procesado.toprettyxml(indent="  ")
+
+app = Flask(__name__)
+
+@app.route('/prueba2', methods=['POST'])
+
+
+
+def addOne():
+    
+    if consulta(request.json['emisor']["id"]["numeroid"]):
+            informacion = et.Element('FacturaElectronica')
+            et.SubElement(informacion,'Clave').text = request.json['clave']
+            et.SubElement(informacion,'CodigoActividad').text = request.json['codigoactividad']
+            et.SubElement(informacion,'NumeroConsecutivo').text = request.json['numeroconsecutivo']
+            et.SubElement(informacion,'FechaEmision').text = request.json['fechaemision']
+
+
+
+            emisor = et.SubElement(informacion,'Emisor')
+            et.SubElement(emisor,'Nombre').text = request.json['emisor']["nombre"]
+
+            identificacion = et.SubElement(emisor,'Identificacion')
+            et.SubElement(identificacion,'Tipo').text= request.json['emisor']["id"]["tipoid"]
+            et.SubElement(identificacion,'Numero').text= request.json['emisor']["id"]["numeroid"]
+
+            ubicacion = et.SubElement(emisor,'Ubicacion')
+            et.SubElement(ubicacion,'Direccion').text= request.json['emisor']['ubicacion']["direccion"]
+
+            telefono = et.SubElement(emisor,'Telefono')
+            et.SubElement(telefono,'CodigoPais').text= request.json['emisor']["telefono"]["codigop"]
+            et.SubElement(telefono,'Numero').text= request.json['emisor']["telefono"]["numero"]
+
+            et.SubElement(emisor,'CorreoElectronico').text = request.json['emisor']["email"]
+
+            receptor = et.SubElement(informacion,'Receptor')
+            et.SubElement(receptor,'Nombre').text = request.json['receptor']['nombre']
+            
+            identificacion = et.SubElement(receptor,'Identificacion')
+            et.SubElement(identificacion,'Tipo').text= request.json['receptor']['id']["tipoid"]
+            et.SubElement(identificacion,'Numero').text= request.json['receptor']['id']["numeroid"]
+
+            ubicacion = et.SubElement(receptor,'Ubicacion')
+            et.SubElement(ubicacion,'Direccion').text= request.json['receptor']['ubicacion']["direccion"]
+
+            telefono = et.SubElement(receptor,'Telefono')
+            et.SubElement(telefono,'CodigoPais').text= request.json['receptor']['telefono']["codigop"]
+            et.SubElement(telefono,'Numero').text= request.json['receptor']['telefono']["numero"]
+
+            et.SubElement(receptor,'CorreoElectronico').text = request.json['receptor']['email']
+
+            DetalleServicio = et.SubElement(informacion,'DetalleServicio')
+        
+            for i in request.json['detalleservicio']['lineadetalle']:
+                LineaDetalle = et.SubElement(DetalleServicio,'LineaDetalle')
+                et.SubElement(LineaDetalle,'NumeroLinea').text=i['numerolinea']
+                et.SubElement(LineaDetalle,'Codigo').text=i['codproducto']
+                et.SubElement(LineaDetalle,'Cantidad').text=i['cantidad']
+                et.SubElement(LineaDetalle,'Detalle').text=i['detalleproducto']
+                et.SubElement(LineaDetalle,'PrecioUnitario').text=i['preciouni']
+                et.SubElement(LineaDetalle,'MontoTotal').text=i['montotal']
+                et.SubElement(LineaDetalle,'Tarifa').text=i['tarifa']
+                et.SubElement(LineaDetalle,'Impuesto').text=i['impuesto']
+                et.SubElement(LineaDetalle,'MontoTotalLinea').text=i['montolinea']
+
+
+
+            ResumenFactura = et.SubElement(informacion,'ResumenFactura')
+            CodigoTipoMoneda = et.SubElement(ResumenFactura,'CodigoTipoMoneda')
+            et.SubElement(CodigoTipoMoneda,'CodigoMoneda').text= request.json["resumenfactura"]["codtipomoneda"]['codmoneda']
+            et.SubElement(ResumenFactura,'TotalVenta').text= request.json["resumenfactura"]['totalventa']
+            et.SubElement(ResumenFactura,'TotalDescuentos').text= request.json["resumenfactura"]['descuentos']
+            et.SubElement(ResumenFactura,'TotalVentaNeta').text= request.json["resumenfactura"]['totalventaneta']
+            et.SubElement(ResumenFactura,'TotalImpuesto').text= request.json["resumenfactura"]['totalimpuesto']
+            et.SubElement(ResumenFactura,'TotalComprobante').text= request.json["resumenfactura"]['total']
+
+            Firma = et.SubElement(informacion,'FirmaDigital')
+            et.SubElement(Firma,'FirmaDigital').text=request.json["firmadigital"]['firma']
+            xml=embellecedor(informacion)
+            if validate(xml, "factura.xsd"):
+                return jsonify({'xml':embellecedor(informacion)})
+            else:
+                mensaje="Hay problemas con el xml"
+                return mensaje   
+    else:
+        novalido="El cliente no existe"
+        return (novalido) 
 
 def consulta(id: int) -> bool:
     resultado=False
@@ -39,83 +125,6 @@ def validate(xml_path: str, xsd_path: str) -> bool:
     result = xmlschema.validate(xml_file)
 
     return result
-app = Flask(__name__)
-
-@app.errorhandler(404)
-def not_found(error):
-     return make_response(jsonify({'error': 'Not found'}), 404)
-
-
-@app.route('/factura', methods=['GET'])
-def get_tasks():
-
-    informacion = et.Element('FacturaElectronica')
-
-    et.SubElement(informacion,'Clave').text = '0000000000000000000000000000000000000'
-    et.SubElement(informacion,'CodigoActividad').text = '00000'
-    et.SubElement(informacion,'NumeroConsecutivo').text = '00000000000000000000'
-    et.SubElement(informacion,'FechaEmision').text = '24/07/2021 12:35:00'
-
-
-
-    emisor = et.SubElement(informacion,'Emisor')
-    et.SubElement(emisor,'Nombre').text = 'Datanet'
-
-    identificacion = et.SubElement(emisor,'Identificacion')
-    et.SubElement(identificacion,'Tipo').text= '01'
-    et.SubElement(identificacion,'Numero').text= '310123456'
-
-    ubicacion = et.SubElement(emisor,'Ubicacion')
-    et.SubElement(ubicacion,'Direccion').text= 'Miramar, Puntarenas'
-
-    telefono = et.SubElement(emisor,'Telefono')
-    et.SubElement(telefono,'CodigoPais').text= '506'
-    et.SubElement(telefono,'Numero').text= '26212122'
-
-    et.SubElement(emisor,'CorreoElectronico').text = 'datanetinfo@gmail.com'
-
-    receptor = et.SubElement(informacion,'Receptor')
-    et.SubElement(receptor,'Nombre').text = 'Andrio Marin'
-    
-    identificacion = et.SubElement(receptor,'Identificacion')
-    et.SubElement(identificacion,'Tipo').text= '02'
-    et.SubElement(identificacion,'Numero').text= '123456789'
-
-    ubicacion = et.SubElement(receptor,'Ubicacion')
-    et.SubElement(ubicacion,'Direccion').text= 'Alajuelita, San Jose'
-
-    telefono = et.SubElement(receptor,'Telefono')
-    et.SubElement(telefono,'CodigoPais').text= '506'
-    et.SubElement(telefono,'Numero').text= '83119850'
-
-    et.SubElement(receptor,'CorreoElectronico').text = 'andrio13marin@gmail.com'
-
-    DetalleServicio = et.SubElement(informacion,'DetalleServicio')
-    LineaDetalle = et.SubElement(DetalleServicio,'LineaDetalle')
-    et.SubElement(LineaDetalle,'NumeroLinea').text= '1'
-    CodigoComercial = et.SubElement(LineaDetalle,'CodigoComercial')
-    et.SubElement(CodigoComercial,'Codigo').text= 'PCD1070'
-    et.SubElement(LineaDetalle,'Cantidad').text= '1'
-    et.SubElement(LineaDetalle,'Detalle').text= 'msi modern b11mo-056 xsp'
-    et.SubElement(LineaDetalle,'PrecioUnitario').text= '650.000'
-    et.SubElement(LineaDetalle,'MontoTotal').text= '650.000'
-    impuesto = et.SubElement(LineaDetalle,'Impuesto')
-    et.SubElement(impuesto,'Tarifa').text= '13.00'
-    et.SubElement(impuesto,'Tarifa').text= '84.500'
-    et.SubElement(LineaDetalle,'MontoTotalLinea').text= '734.500'
-
-    ResumenFactura = et.SubElement(informacion,'ResumenFactura')
-    CodigoTipoMoneda = et.SubElement(ResumenFactura,'CodigoTipoMoneda')
-    et.SubElement(CodigoTipoMoneda,'CodigoMoneda').text= 'CRC'
-    et.SubElement(ResumenFactura,'TotalVenta').text= '734.500'
-    et.SubElement(ResumenFactura,'TotalDescuentos').text= '0'
-    et.SubElement(ResumenFactura,'TotalVentaNeta').text= '650.000'
-    et.SubElement(ResumenFactura,'TotalImpuesto').text= '84.500'
-    et.SubElement(ResumenFactura,'TotalComprobante').text= '734.500'
-
-    return jsonify({'xml':embellecedor(informacion)})
-
 
 if __name__ == '__main__':
-    app.run(host='192.168.1.103', port=4000, debug=True)
-
+    app.run(host='192.168.1.103', port=8080, debug=True)
