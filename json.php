@@ -85,7 +85,7 @@ $ch = curl_init($url);
             'total' => ''.$totalfinal.''
         ),
         'firmadigital' => array(
-            'firma' => 'aqui va la firma digital'
+            'firma' => ''.$response.''
         )
     );
 
