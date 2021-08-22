@@ -2,7 +2,29 @@
 
 
 
-$url = 'http://192.168.1.103:8080/prueba2';
+//otro api
+
+  //datos a enviar
+  $data = array("id" => "1212");
+  //url contra la que atacamos
+  $ch2 = curl_init("http://10.90.29.159:5000/get_myKey");
+  //a true, obtendremos una respuesta de la url, en otro caso, 
+  //true si es correcto, false si no lo es
+  curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+  //establecemos el verbo http que queremos utilizar para la petición
+  curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "PUT");
+  //enviamos el array data
+  curl_setopt($ch2, CURLOPT_POSTFIELDS,http_build_query($data));
+  //obtenemos la respuesta
+  $response = curl_exec($ch2);
+  // Se cierra el recurso CURL y se liberan los recursos del sistema
+  curl_close($ch2);
+
+
+// fin api
+
+
+$url = 'http://10.90.29.163:5000/prueba2';
 
 // //create a new cURL resource
 $ch = curl_init($url);
