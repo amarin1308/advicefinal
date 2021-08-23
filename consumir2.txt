@@ -1,0 +1,9 @@
+ $curl = curl_init($url);
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($fact));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, ['Accept:application/json','Content-Type:application/json']);
+        
+        $result = curl_exec($curl);
+        $valores = json_decode($result,true);
