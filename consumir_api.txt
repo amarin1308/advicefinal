@@ -1,9 +1,0 @@
-_json={'id':1,'expre':xml}                                                         
-url='http://192.168.0.112:6000/cifrar'                               
-                                                                    
-_header= {'Content-Type':'application/json'}                           
-response= requests.post(url, data=json.dumps(_json), headers= _header) 
-                                                            
-datajson= response.json() 
-
-journalctl -xe
